@@ -1,0 +1,218 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0f1923;
+  color: #c0c7d0;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #1a2332;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid #243044;
+  overflow: hidden;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #00e701;
+  letter-spacing: 4px;
+  margin-bottom: 4px;
+}
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-group label { font-size: 12px; color: #7a8fa6; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ✅ FIX: input-row won't overflow anymore */
+.input-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.input-row input[type=number] {
+  min-width: 0;
+  flex: 1;
+}
+
+input[type=number], input[type=text], select {
+  background: #0f1923;
+  border: 1px solid #243044;
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+  outline: none;
+  width: 100%;
+}
+
+input[type=number]:focus, input[type=text]:focus, select:focus {
+  border-color: #00e701;
+}
+
+.input-row button {
+  background: #243044;
+  border: none;
+  color: #c0c7d0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.input-row button:hover { background: #2e3f58; }
+
+.info-box {
+  background: #0f1923;
+  border: 1px solid #243044;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #7a8fa6;
+}
+
+.info-row span:last-child {
+  color: #fff;
+  font-weight: 500;
+}
+
+.btn-main {
+  width: 100%;
+  padding: 13px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  background: #00e701;
+  color: #0a1a0a;
+}
+.btn-main:hover { background: #00c601; }
+.btn-main:active { transform: scale(0.98); }
+.btn-main.cashout { background: #f59e0b; color: #1a1000; }
+.btn-main.cashout:hover { background: #d97706; }
+.btn-main:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.balance-box {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #7a8fa6;
+  padding: 8px 0;
+  border-top: 1px solid #243044;
+  margin-top: auto;
+}
+.balance-box span:last-child { color: #fff; font-weight: 500; }
+
+/* ── Main Grid Area ── */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ── Tiles ── */
+.tile {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  background: #243044;
+  position: relative;
+  overflow: hidden;
+}
+
+.tile:hover:not([disabled]):not(.inactive) {
+  background: #2e3f58;
+  transform: scale(1.05);
+}
+
+.tile.revealed-gem {
+  background: #0f2a1a;
+  border: 1px solid #00e701;
+  cursor: default;
+}
+
+.tile.revealed-mine {
+  background: #2a0f0f;
+  border: 1px solid #e74c3c;
+  cursor: default;
+}
+
+.tile.revealed-mine-hit {
+  background: #5a0000;
+  border: 2px solid #ff1a1a;
+  cursor: default;
+  transform: scale(1.08);
+}
+
+.tile.inactive {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* toast */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2332;
+  border: 1px solid #243044;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+@media (max-width: 600px) {
+  #root { flex-direction: column; }
+  .sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid #243044; }
+  .main { padding: 16px; }
+}

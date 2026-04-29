@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mines — Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f1923;
+      color: #c0c7d0;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container { width: 100%; max-width: 400px; padding: 24px; }
+    .logo {
+      font-size: 32px;
+      font-weight: 700;
+      color: #00e701;
+      letter-spacing: 6px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .tagline {
+      text-align: center;
+      font-size: 13px;
+      color: #4a5f7a;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: #1a2332;
+      border: 1px solid #243044;
+      border-radius: 12px;
+      padding: 28px 24px;
+    }
+    .tabs {
+      display: flex;
+      background: #0f1923;
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      background: transparent;
+      color: #4a5f7a;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab.active { background: #1a2332; color: #fff; }
+    .form { display: flex; flex-direction: column; gap: 16px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-group label {
+      font-size: 12px;
+      color: #7a8fa6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .input-group input {
+      background: #0f1923;
+      border: 1px solid #243044;
+      color: #fff;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      outline: none;
+      width: 100%;
+      transition: border 0.15s;
+    }
+    .input-group input:focus { border-color: #00e701; }
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: #00e701;
+      color: #0a1a0a;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #00c601; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .msg.error   { background: #2a0f0f; border: 1px solid #e74c3c; color: #e74c3c; }
+    .msg.success { background: #0f2a1a; border: 1px solid #00e701; color: #00e701; }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #4a5f7a;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">MINES</div>
+  <div class="tagline">fake money · real fun</div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Login</button>
+      <button class="tab"       onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <!-- Login -->
+    <div id="loginForm" class="form">
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Your username"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Your password"
+               onkeydown="if(event.key==='Enter') submitLogin()"/>
+      </div>
+      <button class="btn-submit" id="loginBtn" onclick="submitLogin()">Login</button>
+    </div>
+
+    <!-- Register -->
+    <div id="registerForm" class="form" style="display:none">
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="regUser" placeholder="Choose a username"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="Choose a password"/>
+      </div>
+      <div class="input-group">
+        <label>Confirm Password</label>
+        <input type="password" id="regConfirm" placeholder="Repeat password"
+               onkeydown="if(event.key==='Enter') submitRegister()"/>
+      </div>
+      <button class="btn-submit" id="registerBtn" onclick="submitRegister()">
+        Create Account
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">Play responsibly. Fake money only.</div>
+</div>
+
+<script>
+  // if already logged in go straight to game
+  if (localStorage.getItem('token')) {
+    window.location.href = '/index.html';
+  }
+
+  function switchTab(tab) {
+    document.getElementById('loginForm').style.display    = tab === 'login'    ? 'flex' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? 'flex' : 'none';
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0) === (tab === 'login'));
+    });
+    hideMsg();
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className   = `msg ${type}`;
+    el.style.display = 'block';
+  }
+
+  function hideMsg() {
+    document.getElementById('msg').style.display = 'none';
+  }
+
+  async function submitLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+
+    if (!username || !password) { showMsg('Fill in all fields', 'error'); return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+
+    try {
+      const res  = await fetch('/api/auth/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        showMsg(data.error, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+      }
+
+      localStorage.setItem('token',    data.token);
+      localStorage.setItem('username', data.user.username);
+      showMsg('Login successful! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/index.html', 800);
+
+    } catch (e) {
+      showMsg('Server error, is the server running?', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    }
+  }
+
+  async function submitRegister() {
+    const username = document.getElementById('regUser').value.trim();
+    const password = document.getElementById('regPass').value;
+    const confirm  = document.getElementById('regConfirm').value;
+
+    if (!username || !password || !confirm) { showMsg('Fill in all fields', 'error'); return; }
+    if (password !== confirm) { showMsg('Passwords do not match', 'error'); return; }
+    if (username.length < 3)  { showMsg('Username must be 3+ characters', 'error'); return; }
+    if (password.length < 4)  { showMsg('Password must be 4+ characters', 'error'); return; }
+
+    const btn = document.getElementById('registerBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating account...';
+
+    try {
+      const res  = await fetch('/api/auth/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        showMsg(data.error, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+        return;
+      }
+
+      localStorage.setItem('token',    data.token);
+      localStorage.setItem('username', data.user.username);
+      showMsg('Account created! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/index.html', 800);
+
+    } catch (e) {
+      showMsg('Server error, is the server running?', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+  }
+</script>
+</body>
+</html>
