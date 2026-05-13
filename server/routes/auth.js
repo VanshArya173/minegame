@@ -14,7 +14,8 @@ router.post('/register', async (req, res) => {
     const exists = await User.findOne({ username });
     if (exists) return res.status(400).json({ error: 'Username already taken' });
 
-    const user = await User.create({ username, password });
+    // ✅ 30k starting balance
+    const user  = await User.create({ username, password, balance: 30000 });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, username: user.username, balance: user.balance } });
   } catch (e) {

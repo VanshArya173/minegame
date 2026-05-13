@@ -4,33 +4,58 @@ const User           = require('../models/User');
 const Game           = require('../models/Game');
 const authMiddleware = require('../middleware/auth');
 
+// Balance
 router.get('/balance', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId)
-      .select('balance totalDeposited totalWon totalLost gamesPlayed');
+      .select('balance totalWon totalLost gamesPlayed lastClaim');
     res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-router.post('/deposit', authMiddleware, async (req, res) => {
+// ✅ Daily claim — 25k every 24 hours
+router.post('/claim', authMiddleware, async (req, res) => {
   try {
-    const { amount } = req.body;
-    if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
-    if (amount > 100000) return res.status(400).json({ error: 'Max deposit is $100,000' });
-
     const user = await User.findById(req.userId);
-    user.balance        += parseFloat(amount);
-    user.totalDeposited += parseFloat(amount);
+    const now  = new Date();
+
+    if (user.lastClaim) {
+      const hoursSince = (now - user.lastClaim) / (1000 * 60 * 60);
+      if (hoursSince < 24) {
+        const hoursLeft   = Math.floor(24 - hoursSince);
+        const minutesLeft = Math.floor((24 - hoursSince - hoursLeft) * 60);
+        return res.status(400).json({
+          error: `Come back in ${hoursLeft}h ${minutesLeft}m`
+        });
+      }
+    }
+
+    user.balance  += 25000;
+    user.lastClaim = now;
     await user.save();
 
-    res.json({ message: `$${amount} added to wallet`, balance: user.balance, totalDeposited: user.totalDeposited });
+    res.json({ message: 'Claimed $25,000!', balance: user.balance });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
+// ✅ Leaderboard — top 10 by balance
+router.get('/leaderboard', authMiddleware, async (req, res) => {
+  try {
+    const top10 = await User.find()
+      .sort({ balance: -1 })
+      .limit(10)
+      .select('username balance');
+    res.json(top10);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Game history
 router.get('/history', authMiddleware, async (req, res) => {
   try {
     const games = await Game.find({ userId: req.userId })
